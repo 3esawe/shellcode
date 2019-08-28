@@ -1,0 +1,23 @@
+BITS 32
+jmp short one; jump down to call at the end 
+
+
+two:          ;ecx     ebx              edx 
+; ssize write(int fd, const void buf, size_t count);
+pop ecx ; pop the retrun address int ecx 
+xor eax, eax; zero out the full 32 bit register
+mov al, 4 ; write syscall 4 to the low byte of eax
+xor ebx, ebx ; zero out the full 32 bit register
+inc ebx; invreament ebx
+xor edx, edx ;; zero out the full 32 bit register
+mov dl, 15; move 15 to the lower byte of edx
+int 0x80; syscall to wire (1, string , 14)
+
+; void _exit(0)
+mov al, 1 ; exit syscall
+dec ebx; status to 0 
+int 0x80
+
+one:
+call two; call the upward function 
+db "Hello world", 0x0a , 0x0d
